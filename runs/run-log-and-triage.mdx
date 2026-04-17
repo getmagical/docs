@@ -1,0 +1,80 @@
+---
+title: "Run Log and Triage"
+description: "Use the Home runs table to review activity, filter problems, and find runs that need attention."
+---
+
+The runs table lives on `Home`. It is the fastest place to find, filter, and triage automation runs.
+
+## Read the runs table
+
+Standard columns:
+
+- `Automation`
+- `Started at`
+- `Status`
+
+Some workspaces or dev modes can also expose:
+
+- `Duration`
+- row selection
+- verification controls
+- error-cluster surfaces
+
+## Filter the table
+
+Use `Add filter` to narrow the list by:
+
+- `Automation`
+- `Agent type`
+- `Agent`
+- `Run status`
+- `Review status`
+- `Error type`, when available
+
+Use `Clear` to remove filters.
+
+## Bulk and row actions
+
+When selection is enabled, the action bar can expose:
+
+- `Rerun`
+- `Stop`
+- `N selected`
+- `Unselect all`
+
+Use table-level controls for broad triage. Use the run detail page when you need to understand one specific run deeply.
+
+## Use the Needs attention view
+
+`Needs attention` is the triage entry point for paused or blocked runs.
+
+1. Open `Home`.
+2. Find the `Run status` panel.
+3. Click `Needs attention`.
+4. Scan the filtered list for automation, starting agent, and review state.
+5. Open the specific run that needs investigation.
+
+## What counts as needs attention
+
+This status groups runs that are paused for human action or blocked by an issue. It is a starting point, not a full diagnosis.
+
+After you open the run:
+
+1. read the latest activity;
+2. identify whether the run needs approval, corrected input, updated credentials, instruction changes, or termination;
+3. decide whether to resume, rerun, stop, or leave the run alone.
+
+## Agent errors
+
+When the `Agent errors` panel is available:
+
+1. review the grouped error categories;
+2. click an error row to filter the table;
+3. open a matching run to inspect the root cause.
+
+## Important boundaries
+
+- Runs are surfaced from `Home`, not a dedicated runs destination.
+- Status counts are dynamic and reflect the currently filtered dataset.
+- Large counts can be truncated in the panel. Hover to see the full value when the UI supports it.
+- `Needs attention` narrows the list, but the actual decision still happens after you open the run.

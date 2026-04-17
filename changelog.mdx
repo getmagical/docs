@@ -1,0 +1,56 @@
+---
+title: "Changelog"
+description: "Product changes captured in the source training guides for March 2026."
+---
+
+## March 2026
+
+### Week of March 24
+
+- Commands-only agent instructions
+  - dedicated commands editor for authoring and reordering instructions;
+  - bulk selection and bulk actions across commands;
+  - hide and unhide commands without deleting them;
+  - inline comments on commands;
+  - keyboard shortcuts for creating, copying, duplicating, hiding, and deleting commands.
+- API response caching
+  - configurable caching on API agents;
+  - TTL support;
+  - reduced unnecessary API calls and rate-limit pressure.
+- Download raw evaluation results
+  - per-trial data download for smaller eval runs.
+- Inputs in starting URLs
+  - input variables can be referenced directly in starting URLs.
+
+### Week of March 16
+
+- Agent action verification
+  - actions are checked against instructions before execution;
+  - critical issues can pause the run;
+  - non-critical issues are logged for review.
+- Improved automations filtering
+  - status, workflow, and owner filters are easier to use.
+- Model rate limiting
+  - requests that would exceed provider limits are skipped and moved to fallback models.
+- Auto-block on high incomplete rates
+  - new runs can be blocked automatically when incomplete rates spike.
+
+### Week of March 10
+
+- New agent types
+  - Browser, Desktop, and Orchestrate naming replaces older worker and specialist terminology in the supported paths.
+- File asset inputs for non-PDF files
+  - broader file-type support for uploaded inputs.
+- `capturePrintOutput`
+  - replaces older print-related commands with a more direct capture flow.
+- New commands library
+  - additional commands for notifications, intervention, downloads, print workflows, and remote file access.
+
+### Week of March 3
+
+- Manual block new runs
+  - queued runs can be blocked without changing automation slots.
+- Untruncated run counts on hover
+  - hover reveals full counts when the panel truncates them.
+- MCP awareness of model buckets
+  - automations can be updated with fallback model buckets through MCP-assisted workflows.
