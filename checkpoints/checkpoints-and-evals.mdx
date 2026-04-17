@@ -1,0 +1,73 @@
+---
+title: "Checkpoints and Evals"
+description: "Capture checkpoint evidence in the builder, review it after runs, and start eval runs when the workspace supports them."
+---
+
+Checkpoints and evals are separate workflows, but both are review surfaces around automation quality.
+
+## Add checkpoints in the builder
+
+Use checkpoints when a step should capture evidence for later review.
+
+1. Open the automation builder.
+2. Select an agent.
+3. Find `Checkpoint`.
+4. Click `Add checkpoint`.
+5. Name the checkpoint.
+6. Turn on `Include screenshot` only when the environment supports it and the screenshot is needed to judge success.
+7. Save the checkpoint.
+
+Checkpoint configuration happens in the builder. Review happens later in the checkpoints workflow.
+
+## Edit or remove a checkpoint
+
+1. Select the node with the checkpoint.
+2. Click the checkpoint chip.
+3. update the name or screenshot setting;
+4. remove the checkpoint when evidence should no longer be collected.
+
+If checkpoints are not enabled for the workspace, the checkpoint section does not appear.
+
+## Review checkpoint evidence
+
+1. Open `Checkpoints`.
+2. If possible, Magical routes to the first automation with checkpoints.
+3. Use the table to inspect evidence states such as `Unreviewed` or `Not found`.
+4. Open a row or evidence cell to review the checkpoint detail.
+5. Use thumbs feedback and `Go to action` when deeper run context is needed.
+
+Available controls can include:
+
+- automation filters;
+- date range;
+- `Clear filters`;
+- `Export`.
+
+There is no separate complete-review button in the current workflow. Review is feedback-oriented.
+
+## Start and review evals
+
+When eval access is enabled:
+
+1. open `Evals`;
+2. review the table;
+3. filter by `Slug` or `Status`;
+4. click `Start Run`;
+5. choose the eval;
+6. use `Test Run` for a dry check or `Run Evaluation` to start the run.
+
+Eval tables can show columns such as:
+
+- `Name`
+- `Slug`
+- `Finished/Total Trials`
+- `Started At`
+- `Duration`
+- `Status`
+
+## Important boundaries
+
+- Checkpoint setup happens in the builder. Checkpoint review happens after runs.
+- `Go to action` moves from a checkpoint back into run context.
+- Evals appear only when the workspace has eval access.
+- Model comparison workflows are internal or dev-mode-only and are not the normal eval path.

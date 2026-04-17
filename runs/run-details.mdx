@@ -1,0 +1,89 @@
+---
+title: "Run Details"
+description: "Read the run detail page, use navigation aids, and apply the right lifecycle controls."
+---
+
+Open a run from the `Home` runs table to move from triage into detailed review.
+
+## Read the top bar
+
+The top bar can show:
+
+- automation name;
+- an optional AI-generated name chip;
+- the status chip;
+- the starting agent;
+- start time;
+- duration.
+
+Use those fields to confirm you are reviewing the correct run before taking action.
+
+## Use the left panel and player together
+
+The left panel defaults to `Activity`. It explains the sequence of events, approvals, feedback prompts, and action history.
+
+The player on the right can show states such as:
+
+- `Preview`
+- `Live`
+- `You're in control`
+
+Use the scrubber, step navigation, fullscreen, and playback speed to line up what you see in the player with what you see in the activity feed.
+
+An `Inputs` tab can appear behind a feature flag. Treat it as conditional.
+
+## Navigate by agent or checkpoint
+
+Use the navigator surfaces when a run is too long to inspect linearly.
+
+### Agent navigation
+
+Use the agent navigator to:
+
+- filter by a specific agent;
+- show matching values;
+- jump directly to a relevant agent step.
+
+### Checkpoint navigation
+
+Use the checkpoint navigator to:
+
+- jump to a checkpoint action;
+- inspect the checkpoint in context;
+- open the broader checkpoint table with `Open in table`.
+
+## Lifecycle controls
+
+Open the run menu to access controls such as:
+
+- `Go to automation`
+- `Save as test`
+- `Pause run`
+- `Resume run`
+- `Rerun`
+- `Terminate`
+- `Run history`
+
+Guidance:
+
+- use `Pause run` and `Resume run` for normal lifecycle control;
+- use `Rerun` when the same starting path should be attempted again;
+- use `Terminate` only when the run should stop permanently;
+- use `Run history` to compare the original run with later reruns.
+
+If rerun is unavailable, Magical can show `Automation cannot be rerun`.
+
+## Choose the right action
+
+- Open the run activity first.
+- Resume only when the correct next step is clear.
+- Rerun when starting fresh is safer than continuing from the current state.
+- Terminate when the run should not continue under any circumstance.
+- Use `Save as test` when the run should become a regression artifact.
+
+## Important boundaries
+
+- `Terminate` is destructive and cannot be undone.
+- Some actions only appear when state, feature flags, and permissions allow them.
+- Checkpoint review lives in the dedicated checkpoints workflow even though the run detail page can jump into it.
+- Live takeover is separate from normal lifecycle controls and is covered in [Live Supervision](/runs/live-supervision).

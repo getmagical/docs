@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Magical University",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -14,91 +14,56 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "basics/navigation",
+              "basics/agents-and-commands"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Build Automations",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "automations/manage-and-create",
+              "automations/build-on-the-canvas",
+              "automations/node-guides",
+              "automations/draft-runs-and-tests",
+              "automations/publish-and-versions"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Run Automations",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "runs/run-log-and-triage",
+              "runs/run-details",
+              "runs/live-supervision"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Settings",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
+              "settings/credentials-and-settings",
+              "settings/shared-assets"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Checkpoints and Evals",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "checkpoints/checkpoints-and-evals"
+            ]
+          },
+          {
+            "group": "Support",
+            "pages": [
+              "support/faqs-and-support",
+              "practice/build-your-first-automation",
+              "practice/triage-and-review-a-run",
+              "changelog"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
+    ]
   },
   "contextual": {
     "options": [
@@ -111,12 +76,5 @@
      "cursor",
      "vscode"
    ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
   }
 }

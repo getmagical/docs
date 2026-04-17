@@ -1,0 +1,130 @@
+---
+title: "Node Guides"
+description: "Choose the right node type and configure the fields that matter for each major agent surface."
+---
+
+Use the table below to decide which node type fits the job.
+
+## Quick chooser
+
+| Node type | Use it when | Avoid it when |
+| --- | --- | --- |
+| `Orchestrate` | The node should think, transform data, call tools, or coordinate other steps without a live environment. | The step is just a strict if/else or a direct API request. |
+| `Browser` | The work depends on webpage state, navigation, typing, clicks, or visual context. | The task is only a structured request/response call. |
+| `Desktop` | The work happens on a machine or native application UI. | The work lives entirely in a browser tab. |
+| `API` | The node should call an external service with structured request and response fields. | The task needs UI interaction or open-ended reasoning. |
+| `Branch` | The next path depends on explicit conditions. | The node should do the work itself. |
+| `Code` | The workflow needs explicit TypeScript logic or typed orchestration. | A simpler node or command can express the behavior clearly. |
+| `Library asset` | You want reusable shared logic maintained from the library. | You need a one-off draft-only step. |
+
+## Orchestrate
+
+Use `Orchestrate` for logic and coordination without opening a browser or desktop session.
+
+Typical setup:
+
+1. choose a model when shown;
+2. set `Max duration`;
+3. add the tools it needs;
+4. connect any queueable downstream agents;
+5. define inputs and outputs;
+6. turn on a checkpoint only if the step needs later review.
+
+Prefer `Branch` for strict path selection and `API` for a direct service request.
+
+## Browser
+
+Use `Browser` for website interaction.
+
+Key fields:
+
+- `Vision type`
+- `Starting URL`
+- `Browser provider`
+- `Proxy`
+- `Save auth cookies after run`
+- standard fields such as model, max duration, tools, inputs, and outputs
+
+Mode guidance:
+
+- `Marks` is the standard element-aware browser mode.
+- `Coordinates` is the fallback when point-and-click behavior is required.
+
+When `Run settings` is enabled, some browser-profile fields move out of the node and into run settings.
+
+## Desktop
+
+Use `Desktop` when the automation needs a machine or native app.
+
+Desktop modes:
+
+- `Remote Desktop` for session-style desktop control
+- `Desktop App` for a configured desktop installation or pool
+
+Expect different fields depending on the chosen mode. `Desktop App` typically requires a target from `Desktops`.
+
+## API
+
+Use `API` for structured external service calls.
+
+Typical setup:
+
+1. select the `Integration`;
+2. select `Authentication`;
+3. add credentials in workspace settings first if none exist;
+4. enter the `URL`;
+5. add `Query Parameters` or `HTTP Headers` as needed;
+6. choose the `Action`, such as `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`;
+7. configure the body when the action supports one;
+8. use `Output JMESPath` when you only want a subset of the response.
+
+Use `Browser` for UI automation and `Branch` for routing after the response is available.
+
+## Branch
+
+Use `Branch` when the next action should be decided from conditions.
+
+Minimum valid setup:
+
+1. at least one if condition;
+2. a fallback else path;
+3. an outcome for each path, such as stop, call another agent, or queue agents.
+
+If the node is incomplete, saving is blocked with `Branch agents need if and else conditions`.
+
+## Code
+
+Use `Code` when the workflow needs explicit TypeScript logic.
+
+Important rules:
+
+- Treat the editor as the body of an async function.
+- Use the generated globals: `inputs`, `tools`, `context`, and `utils`.
+- Do not add imports, `require`, or package-install commands.
+- End with a valid `return` object.
+
+Typical return shape:
+
+```typescript
+return {
+  status: 'success',
+  message: 'Completed the step',
+  output: {
+    result: 'value',
+  },
+};
+```
+
+Validation blockers flag type errors and forbidden globals such as `require`, `import()`, `fetch`, `process`, and `console`.
+
+## Shared library assets
+
+Library-backed steps are reusable assets managed from the library, not ordinary draft-only nodes.
+
+Use them when you want:
+
+- reuse across multiple automations;
+- update-to-latest behavior;
+- a traceable source asset.
+
+The library workflow continues in [Shared Assets](/settings/shared-assets).

@@ -1,0 +1,60 @@
+---
+title: "Live Supervision"
+description: "Switch into live view, take over browser control when needed, and resume the run with useful guidance."
+---
+
+Use live supervision when a running automation needs human help or when you need to inspect the browser session in real time.
+
+## Preview versus Live
+
+- `Preview` is the normal playback-style review surface.
+- `Live` shows the active session when live viewing is available.
+
+Switch to `Live` only when you need current-state context or direct control.
+
+## Take over a live session
+
+1. Open the run detail page.
+2. Switch to `Live`.
+3. Click `Take over`.
+4. Complete the required browser action.
+5. Click `Done`.
+6. In `Submit changes`, tell the agent where to continue.
+7. Click `Submit and resume`.
+
+While you are controlling the session, Magical shows `You're in control`.
+
+## Resume a paused run with instructions
+
+If the run is paused but you do not need direct browser control:
+
+1. use the instruction box;
+2. explain the next step clearly;
+3. submit with `Resume automation`.
+
+Good resume messages are specific about the next action:
+
+- `I selected the matching customer record. Continue from the details page.`
+- `The login prompt is cleared. Continue with the report export.`
+- `The page is showing a permissions error. Stop retrying and report this blocker.`
+
+## When to take over versus when to give feedback
+
+Take over when:
+
+- the agent is blocked on a browser action only a human can complete;
+- the current page state matters;
+- you need to unblock the session directly.
+
+Use a normal resume message when:
+
+- the run is paused for guidance;
+- the next step is clear without direct browser control;
+- feedback on the decision is more important than UI intervention.
+
+## Important boundaries
+
+- `Take over` is for live browser control, not for every paused run.
+- Leaving the page while you are in control can trigger a navigation warning.
+- If the run is already finished, Magical exits user-controlled state.
+- Lifecycle actions like rerun and terminate still belong to the run controls workflow.

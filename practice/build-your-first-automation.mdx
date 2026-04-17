@@ -1,0 +1,69 @@
+---
+title: "Practice: Build Your First Automation"
+description: "Apply the builder workflow end to end by creating, testing, and evaluating a simple automation."
+---
+
+Use this exercise after learners understand the basics of creating, configuring, testing, and publishing automations.
+
+## Practice goal
+
+Build a simple automation from scratch and prove that you can move through the core builder workflow without relying on screenshots.
+
+## Scenario
+
+Build a simple research assistant automation for a customer-support workflow.
+
+The automation should:
+
+- accept a customer or account name;
+- research the relevant record or page;
+- summarize the important context;
+- produce a short handoff note for a teammate.
+
+Use this as a training scaffold, not a required production pattern.
+
+## Exercise
+
+1. Open `Automations`.
+2. Click `Create`.
+3. Rename the draft in `Automation Name`.
+4. Add a starting node such as `Trigger` or `Worker`, depending on workspace setup.
+5. Add at least one more work-producing node.
+6. Configure each selected node.
+7. Add `Inputs` and `Outputs` where data handoff matters.
+8. Add `Tools` only where the node needs them.
+9. Set `Max Tool Calls` to a valid positive number.
+10. Add a checkpoint if the workspace supports it and the step needs evidence.
+11. Use `Try it` to test the draft.
+12. Open `Test` and create or scan an automation test if the scenario requires it.
+13. Save the draft.
+14. Decide whether to publish and explain why.
+
+## Completion criteria
+
+The learner should be able to explain:
+
+- what each node is responsible for;
+- what values move through inputs and outputs;
+- which tools are actually needed;
+- whether any checkpoint evidence is necessary;
+- what they tested before publishing;
+- why the automation is ready or not ready to publish.
+
+## Coach checklist
+
+A strong submission shows:
+
+- a clear automation name;
+- at least one starting node and one work-producing node;
+- instructions that explain the job rather than only UI clicks;
+- useful inputs and outputs;
+- tools added intentionally;
+- a test or draft run that proves the learner validated behavior;
+- a publish decision with reasoning.
+
+## Important boundaries
+
+- This is a practice page, not a new product workflow.
+- Feature flags can change the exact node types and navigation surfaces available.
+- Use the topic guides for details on any step that feels unclear during the exercise.

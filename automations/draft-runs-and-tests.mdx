@@ -1,0 +1,104 @@
+---
+title: "Draft Runs and Tests"
+description: "Validate draft behavior with Try it, then use automation tests to compare behavior over time."
+---
+
+Draft runs and automation tests solve different problems.
+
+| Workflow | Best for |
+| --- | --- |
+| Draft run | Fast iteration while you are still editing the draft. |
+| Automation test | Comparing current behavior to recorded behavior after changes. |
+
+## Start a draft run
+
+1. Select the node you want to test.
+2. Click `Try it`.
+3. Confirm the agent chip in the modal is the node you intend to run.
+4. Choose approval mode.
+5. Set consistency checks.
+6. Provide inputs in `List` or `JSON`.
+7. Click `Try it`.
+
+Magical saves pending edits first. If a save blocker appears, resolve it before starting the run again.
+
+## Approval modes and consistency checks
+
+Approval modes:
+
+- `Auto` keeps the run moving without manual approval stops.
+- `Manual` pauses proposed actions so you can review them.
+
+Consistency checks:
+
+- `Off` for fastest iteration
+- `3` for a normal validation pass
+- `30` for the strictest validation
+
+## Use the preview overlay
+
+While the draft run is active, the preview overlay lets you:
+
+- watch the live preview;
+- read the activity feed;
+- switch between `Auto` and `Manual`;
+- change consistency checks;
+- approve or retry paused actions;
+- pause, resume, stop, or inspect inputs;
+- collapse the preview without terminating the run.
+
+`Collapse preview window` hides the overlay. It does not stop the run.
+
+## Review previous draft runs
+
+Use the `Draft runs` surface next to `Try it` when you want to reopen older draft runs for the selected node and its ancestor nodes.
+
+Check the table columns:
+
+- `Agent`
+- `Started At`
+- `Duration`
+- `Status`
+
+## Move into automation tests
+
+Open the `Test` tab when you need regression confidence instead of one-off validation.
+
+The tests table shows each test's:
+
+- name;
+- update time;
+- status.
+
+## Test statuses
+
+- `Ready to scan`
+- `Scanning...`
+- `Passed`
+- `Failed`
+- `Halted`
+- `Paused`
+- `Out of sync`
+- `Not started` for older tests
+
+If a test is `Out of sync`, recreate it instead of scanning it again.
+
+## Scan and review tests
+
+1. Click `Scan for issues` to scan all ready tests.
+2. Use row-level `Scan` if you only want one test.
+3. Open a completed test result.
+4. Compare `Recorded` versus `Simulation`.
+5. Use `Previous` and `Next` when multiple cases exist.
+6. Open `View inputs` when you need to inspect the test inputs.
+
+## Reuse test inputs
+
+Row actions can expose `Reuse inputs`. Use that when you want to start a draft run with the same input set that was used by a saved test.
+
+## Important boundaries
+
+- Draft runs use the current saved draft, not the published version.
+- Draft runs do not publish anything.
+- Automation tests are not a substitute for draft iteration.
+- Model-comparison flows are internal or dev-mode-only and should not be treated as the normal learner path.

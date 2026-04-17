@@ -1,0 +1,77 @@
+---
+title: "Build on the Canvas"
+description: "Add nodes, understand canvas groups, find the right agent, and keep the graph readable."
+---
+
+The canvas shows automation structure. The right-side editor controls behavior for the selected node.
+
+## Canvas versus editor
+
+- The canvas answers: `What steps exist, and how are they connected?`
+- The editor answers: `What does this selected step do?`
+
+Keep those responsibilities separate when teaching or troubleshooting.
+
+## Add an agent
+
+1. Open an automation in the builder.
+2. Use the add-agent panel on the canvas.
+3. Pick a group such as `Start`, `Logic`, `Environment`, `Code`, or `Import`.
+4. Choose the node type you need.
+
+Some workspaces still show legacy group names such as `Core`, `Logic`, and `Data`.
+
+## Node labels you may see
+
+Depending on workspace flags and the currently selected parent, the add panel can expose labels such as:
+
+- `Trigger`
+- `Worker`
+- `Specialist`
+- `Orchestrate`
+- `Browser`
+- `Desktop`
+- `Voice`
+- `Branch`
+- `API`
+- `Code`
+- `File extract`
+- `Library asset`
+- code presets such as `Export Resolver`, `Data Compare`, `Result Formatter`, or `Digest Builder`
+
+Do not document every node as universally available. Availability changes with feature flags, engineering mode, and canvas state.
+
+## Disabled options
+
+Common reasons a node type is disabled:
+
+- `Trigger` already exists in the automation.
+- `Specialist`, `Branch`, `File extract`, and `Library asset` need an active parent node.
+- `Library asset` is disabled if the current active node is already library-backed.
+- `Code` and code presets are hidden when the relevant feature flags are off.
+
+## Find and arrange agents
+
+Use the builder controls when the graph gets large:
+
+- `Find agents` or the Command-K shortcut searches the canvas.
+- `Search agents...` helps you jump to a specific node.
+- `Tidy up` automatically cleans up layout.
+- Selecting a node moves focus to its fields in the editor.
+
+## A safe build pattern
+
+For a normal draft:
+
+1. add the starting node;
+2. add work-producing nodes and any routing nodes;
+3. define inputs and outputs where data handoff matters;
+4. add tools only where the selected node needs them;
+5. set checkpoints only where evidence will be useful later;
+6. validate with a draft run before publishing.
+
+## Important boundaries
+
+- The canvas is the structure layer, not the full configuration layer.
+- Feature-flagged nodes should be described conditionally.
+- Detailed setup for API, Branch, Browser, Desktop, Orchestrate, and Code nodes lives in [Node Guides](/automations/node-guides).

@@ -1,0 +1,96 @@
+---
+title: "Agents and Commands"
+description: "Configure agent fields, shape data flow, manage tools, and use structured commands safely."
+---
+
+The agent editor controls what a selected node is named, what it can access, what data it receives, and what it returns.
+
+## Common agent surfaces
+
+| Surface | What it controls |
+| --- | --- |
+| `Agent name` | The label shown on the canvas. |
+| `Instructions` or `Commands` | The work the agent should perform. |
+| `Model` | The model or model pool used by the node. |
+| `Platform` | The environment where the agent runs, when supported. |
+| `Starting URL` | The initial page for browser-based work. |
+| `Inputs` | Values the agent can receive from earlier steps. |
+| `Outputs` | Values the agent should return to later steps. |
+| `Tools` | Capabilities the agent is allowed to call. |
+| `Max Tool Calls` | A positive limit on the agent's tool loop. |
+
+Some fields are hidden in summarized views or on node types that use specialized forms such as `API`, `Branch`, or `Code`.
+
+## Inputs, outputs, tools, and max tool calls
+
+Use these four surfaces together:
+
+- `Inputs` define what the node can read.
+- `Outputs` define what later steps can depend on.
+- `Tools` define what the node may do.
+- `Max Tool Calls` defines how long the node can keep calling tools before it must stop.
+
+Practical rules:
+
+- Add inputs only when a downstream value is actually needed.
+- Keep outputs narrow enough that later steps stay predictable.
+- Add tools only where the node needs the capability.
+- Set `Max Tool Calls` to a valid positive number when the field is shown.
+
+## Tools versus commands
+
+These are related, but they are not the same surface.
+
+| Surface | Meaning |
+| --- | --- |
+| Tool | A permission the agent can use while reasoning. |
+| Command | Structured instruction content with a chosen type and typed fields. |
+
+Use a tool when the agent needs capability. Use a command when the workflow needs a specific, inspectable action with explicit parameters.
+
+## Add a command
+
+1. Open a command-enabled instruction area.
+2. Open the `Command` panel.
+3. Set `Type`.
+4. Use `Select a command...` or `Search types...` to find the command you need.
+5. Fill the required fields.
+6. Click `Done`.
+
+Commands are a better fit than free text when the behavior should be consistent every time, such as stopping with a specific reason or invoking a specialized follow-up action.
+
+## Update, duplicate, or delete a command
+
+1. Open the existing command chip or panel.
+2. Edit the type or fields as needed.
+3. Use `Command actions` to `Duplicate` or `Delete` the local command instance.
+4. Retest if the change affects branching, tool usage, or downstream outputs.
+
+Updating a command changes structured instruction content inside the automation. It does not change the global command registry.
+
+## Choose the right node at a glance
+
+- Use `Trigger` for the start of an automation.
+- Use `Worker` for top-level work.
+- Use `Specialist` for focused child work under an active parent.
+- Use `Branch` for condition-based routing.
+- Use `API` for structured service calls.
+- Use `Browser` or `Desktop` for environment-specific interaction.
+- Use `Code` when the workflow needs explicit TypeScript logic.
+
+The detailed setup for those node types lives in [Node Guides](/automations/node-guides).
+
+## Save blockers
+
+When Magical shows `Resolve issues before saving`:
+
+- open the listed agent directly from the blocker modal;
+- fix missing instructions, incomplete API config, invalid command fields, or invalid tool settings;
+- use `Ignore & Save` only when the issue is explicitly safe to accept.
+
+## Important boundaries
+
+- Inputs and outputs shape data flow. They do not write instructions for you.
+- Tools define capability, not intent.
+- Command availability depends on environment and registry support.
+- Some node types require an active parent agent before they can be added or configured.

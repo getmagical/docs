@@ -1,0 +1,89 @@
+---
+title: "Publish and Versions"
+description: "Publish safely, republish intentionally, run the published version, and compare older revisions before restoring."
+---
+
+Publishing turns a draft automation into a runnable published automation. Version history helps you compare or restore work.
+
+## Publish for the first time
+
+1. Open the automation builder.
+2. Save any pending draft changes.
+3. Confirm `Publish` is enabled.
+4. Click `Publish`.
+5. Review `Checks`.
+6. Configure schedule or notifications if the workflow needs them.
+7. Click `Request review` or `Publish`.
+
+`Publish` is disabled when the draft has unsaved changes, matches the published version, or has no draft automation ID.
+
+## Republish changes
+
+When the automation is already live:
+
+1. make draft changes;
+2. save the draft;
+3. click `Publish` again;
+4. review the republish sections such as `Changes`, `Overview`, `Trigger`, and `Notifications`;
+5. request review or publish the update.
+
+## Published automation actions
+
+The publish menu can include:
+
+- `View published`
+- `Run published`
+- `Block new runs`
+- `Unblock new runs`
+
+Use `Block new runs` when a published automation should stop accepting new queued work without deleting the workflow.
+
+## Run the published version
+
+Use `Run published` when you want to test what is actually live.
+
+1. Open the draft builder.
+2. Open the action menu.
+3. Choose `Run published`.
+4. In `Run Automation`, provide required inputs in `List` or `JSON`.
+5. Click `Run`.
+
+Common blockers:
+
+- `Automation is not published`
+- `No agents to run`
+- `New runs are blocked`
+- missing agent instructions
+- incomplete API configuration
+- invalid or missing input values
+
+`Run published` uses the live published version, not unsaved draft changes.
+
+## Understand version surfaces
+
+There are two different history controls:
+
+| Surface | Scope |
+| --- | --- |
+| Automation versions | The entire automation. |
+| Agent history | One selected node. |
+
+Do not treat them as interchangeable.
+
+## Compare or restore carefully
+
+Before restoring:
+
+1. confirm whether you are in automation history or agent history;
+2. use `Compare to current`;
+3. verify the current draft does not contain work you still need;
+4. restore only when the older version is definitely the intended source of truth.
+
+Comparing is safe. Restoring changes the current working state.
+
+## Important boundaries
+
+- Publishing and running are separate actions.
+- The published viewer is not the same thing as the draft builder.
+- Scheduling and notification details live in [Credentials and Settings](/settings/credentials-and-settings).
+- Use version restore sparingly when active draft work is still in progress.

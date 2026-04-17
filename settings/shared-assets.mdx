@@ -1,0 +1,75 @@
+---
+title: "Shared Assets"
+description: "Reuse shared library assets and move agents across automations without confusing library links with JSON import and export."
+---
+
+Shared assets and JSON import/export both help with reuse, but they solve different problems.
+
+## Shared library assets
+
+Use `Library` when the goal is reusable, centrally managed logic.
+
+From the library you can:
+
+- search assets;
+- create new assets;
+- edit existing assets;
+- delete assets;
+- review version history;
+- see where an asset is used.
+
+If the workspace has no assets yet, Magical shows `No assets`.
+
+## Reuse an asset in an automation
+
+1. Open the automation builder.
+2. Select the parent node that should receive the asset.
+3. Add a `Library asset`, or open the library import flow when available.
+4. Search or preview the asset.
+5. Click `Import`.
+
+Common library link states:
+
+- `Shared from library`
+- `Update to latest`
+- `Detach`
+
+Use `Update to latest` when the automation should follow the newest shared version. Use `Detach` when the automation should stop following the library relationship.
+
+## Import and export agents as JSON
+
+Use JSON import/export when the goal is moving one or more agents across automations, not maintaining a reusable shared source.
+
+### Export
+
+1. Open the automation.
+2. Go to `Settings`.
+3. Open `Import or export agents`.
+4. Choose `Export`.
+5. Select the agents you want.
+6. Decide whether to keep `Include automation config` enabled.
+7. Click `Copy JSON to clipboard`.
+
+### Import
+
+1. Open the `Import` tab.
+2. Paste valid exported JSON.
+3. Leave `Replace automation instead of adding` off when you want to append.
+4. Turn replacement on only when you intend to overwrite the current automation structure.
+5. Click `Add to automation` or `Replace automation`.
+
+## Library versus JSON
+
+| Workflow | Best for |
+| --- | --- |
+| Library asset | Central reuse with update and detach behavior. |
+| JSON import/export | Copying agents between automations as a one-time transfer. |
+
+Library links are not the same as JSON import. JSON flows can flatten library-backed agents into ordinary nodes instead of preserving the library relationship.
+
+## Important boundaries
+
+- Replacing an automation during JSON import is destructive.
+- Library asset import usually requires an active parent node.
+- Deleting a library asset can affect other automations.
+- Use JSON import/export for transfer. Use the library for shared ownership.

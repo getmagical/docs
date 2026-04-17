@@ -1,0 +1,41 @@
+---
+title: "Navigate Magical"
+description: "Understand the main product areas, what each one is for, and why the sidebar can differ by workspace."
+---
+
+Use the left navigation to move between the core Magical work areas that are enabled for your workspace.
+
+## Core areas
+
+| Area | Use it for | Notes |
+| --- | --- | --- |
+| `Home` | Review automation runs and triage issues from the runs table. | Runs live on the home route, not a standalone runs page. |
+| `Automations` | Create, edit, test, publish, and manage automations. | The entry can be hidden when automation creation is disabled. |
+| `Checkpoints` | Review checkpoint evidence captured during runs. | Appears only when checkpoints are enabled. |
+| `Library` | Reuse and maintain shared assets across automations. | Requires shared assets and automation creation to be enabled. |
+| `Evals` | Start and review evaluation runs. | Appears only when eval access is enabled. |
+
+## Why your sidebar may look different
+
+Sidebar visibility depends on workspace configuration, permissions, and feature flags.
+
+- `Checkpoints` appears when checkpoint workflows are enabled.
+- `Automations` appears when automation creation is enabled.
+- `Library` appears when shared assets are available.
+- `Evals` appears when the workspace has eval access.
+
+If a guide references a surface you do not see, confirm that the feature is enabled in your workspace before assuming the guide is outdated.
+
+## How to choose the right area
+
+- Start in `Home` when the question is about what happened during a run.
+- Start in `Automations` when you need to build, test, or publish workflow logic.
+- Start in `Checkpoints` when a run captured reviewable evidence.
+- Start in `Library` when you want reusable assets rather than one-off draft logic.
+- Start in `Evals` when you need evaluation history or want to kick off a new eval run.
+
+## Important boundaries
+
+- The runs table is part of `Home`.
+- Some guides describe conditional surfaces. Treat them as workspace-dependent, not universally available.
+- This page is the orientation layer. Use the topic guides for step-by-step workflows.
