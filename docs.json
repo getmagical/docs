@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Magical University",
+  "name": "Magical",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#58CC2D",
+    "light": "#AFFF4A",
+    "dark": "#00990F"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -76,5 +76,14 @@
      "cursor",
      "vscode"
    ]
+  },
+  "logo": "/images/Type=Brandmark,Theme=Green.png",
+  "navbar": {
+    "links": [
+      {
+        "label": "Platform",
+        "href": "https://platform.getmagical.io"
+      }
+    ]
   }
 }
