@@ -7,7 +7,6 @@
     "light": "#AFFF4A",
     "dark": "#00990F"
   },
-  "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
@@ -85,5 +84,6 @@
         "href": "https://platform.getmagical.io"
       }
     ]
-  }
+  },
+  "favicon": "/images/Type=Brandmark,Theme=Green.png"
 }
