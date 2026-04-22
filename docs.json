@@ -85,5 +85,9 @@
       }
     ]
   },
-  "favicon": "/images/Type=Brandmark,Theme=Green.png"
+  "favicon": "/images/Type=Brandmark,Theme=Green.png",
+  "appearance": {
+    "strict": false,
+    "default": "system"
+  }
 }
