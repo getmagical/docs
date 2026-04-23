@@ -1,0 +1,151 @@
+---
+title: Local setup
+description: Bootstrap the Magical monorepo, configure direnv and Doppler, and provision a local database.
+---
+
+## Prerequisites
+
+Install these before you start:
+
+- [Homebrew](https://brew.sh/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Postico](https://eggerapps.at/postico/) (installed by the bootstrap script)
+- [Postman](https://www.postman.com/downloads/) (installed by the bootstrap script)
+
+## Bootstrap
+
+On a fresh clone, run the bootstrap script after installing Homebrew:
+
+```bash
+./bootstrap.sh
+```
+
+Use the correct Node version in the repo root:
+
+```bash
+nvm use
+```
+
+Install dependencies and Turborepo:
+
+```bash
+# Install dependencies with exact versions from package-lock.json
+npm ci
+
+# Install turborepo globally
+npm install -g turbo
+```
+
+## direnv (recommended)
+
+`direnv` automatically adds `node_modules/.bin` and `$HOME/.local/bin` to your `PATH` when you're in the project, so you can run workspace tools like `turbo`, `claude`, `codex`, and `gemini` directly, plus the repo CLIs installed by `scripts/setup-worktree.sh`.
+
+<Steps>
+  <Step title="Install direnv">
+    ```bash
+    brew install direnv
+    ```
+  </Step>
+  <Step title="Hook direnv into your shell">
+    Add to `~/.zshrc` (or your shell config):
+
+    ```bash
+    eval "$(direnv hook zsh)"
+    ```
+
+    Restart your terminal or run `source ~/.zshrc`.
+  </Step>
+  <Step title="Allow .envrc">
+    The first time you `cd` into the magical directory, direnv prompts you to allow the `.envrc` file:
+
+    ```bash
+    direnv allow
+    ```
+  </Step>
+</Steps>
+
+After setup, you can run `turbo`, `claude`, `codex`, `gemini`, `agent-browser`, `agent-slack`, `linear`, `neon`, `neonctl`, `sentry`, `notion`, `temporal`, and `pup` directly (no `npx` needed).
+
+<Warning>
+  For one-shot or non-interactive shell invocations, `direnv allow` alone is not enough. Use `direnv exec . <command>` so `.envrc` actually loads. This matters for auth-backed CLIs like `agent-slack`, `doppler`, `mgcl`, `railway`, `temporal`, and `vapi`.
+</Warning>
+
+## Doppler (secrets and env vars)
+
+Magical uses Doppler to manage secrets and environment variables.
+
+Log in once from the repo root:
+
+```bash
+doppler login
+```
+
+Configure or switch environments:
+
+```bash
+doppler setup
+```
+
+Pick `dev` or `stg`.
+
+<Tip>
+  Always run `doppler setup` from the **root of the repository** so the config is centralized. Running it from a subfolder creates a separate config entry that can override your root setup. See [Troubleshooting](/internal/troubleshooting) if environment switching stops working.
+</Tip>
+
+## Database
+
+### Easiest: Neon branch (staging data)
+
+```bash
+npm run new-db
+```
+
+This creates a new Neon branch and updates `.env` with the connection string. You get staging data, can test migrations, and can re-run the command any time to reset.
+
+Once a database is set up, use this command to run packages with loaded env:
+
+```bash
+turbo dev:load-env
+```
+
+### Offline / local dev setup
+
+Migrate and seed the database:
+
+```bash
+turbo run migrate --filter=@magical/db
+turbo run seed --filter=@magical/db
+```
+
+Generate fake data:
+
+```bash
+turbo run mock --filter=@magical/db
+```
+
+### Database commands
+
+```bash
+npm run db:generate          # Generate migration
+npm run db:migrate:load-env  # Run migrations
+```
+
+## Dev auth for agents
+
+When starting services, set a dev auth email so agent interactions work locally:
+
+```bash
+DEV_AUTH_EMAIL=agent@getmagical.com turbo watch dev:load-env
+```
+
+## Create a fresh Neon branch from a script
+
+For scripted setup (e.g., in a worktree), seed in one step:
+
+```bash
+npx inject-envs -- bash scripts/create-neon-branch.sh --seed
+```
+
+## Editor and extensions
+
+Cursor (built on VSCode) is the recommended editor. Install recommended extensions from `.vscode/extensions.json` or the Extensions tab's Recommendations list.

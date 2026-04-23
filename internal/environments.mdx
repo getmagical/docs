@@ -1,0 +1,43 @@
+---
+title: Environments
+description: Staging, production, and PR preview environment model across Railway, Doppler, Sentry, and Neon.
+---
+
+## The three environments
+
+- **`staging`** — the shared pre-production environment.
+- **`production`** — the live customer environment.
+- **PR deployments** — per-PR preview environments.
+
+## PR preview identifiers
+
+For a PR numbered `N`:
+
+| Surface | Value |
+| --- | --- |
+| Railway environment | `pr-<number>` |
+| Doppler config | `stg_pr-<number>` |
+| Sentry environment | `preview` |
+| `NEXT_PUBLIC_MAGICAL_ENVIRONMENT` | `preview` |
+| Neon branch | Often `pr-<number>`, but **not always** the actual backing DB for that preview |
+
+### Preview database strategy
+
+The preview DB strategy is conditional:
+
+- If the PR contains committed Drizzle migration artifacts, the preview uses a dedicated Neon branch named `pr-<number>`.
+- If the PR has no committed migrations, the preview Doppler config can still point at the shared staging database.
+- For preview DB checks, resolve the actual database from Doppler first instead of assuming the Neon branch name is the source of truth.
+
+## Environment lookup patterns
+
+| Tool | Staging | Production | PR previews |
+| --- | --- | --- | --- |
+| `railway` | environment `staging` | environment `production` | environment `pr-<number>` |
+| `pup` (Datadog) | `service:<service> env:staging` | `service:<service> env:production` | `service:<service> env:pr-<number>`; if empty, fall back to `service`, URL, commit SHA, branch, request path, automation run ID, or PR number |
+| `sentry` | project `getmagical/<project>` with `environment:staging` | project `getmagical/<project>` with `environment:production` | project `getmagical/<project>` with `environment:preview` |
+| `neon` | branch `staging` in project `ancient-sun-39943590` | branch `production` in project `ancient-sun-39943590` | Inspect `stg_pr-<number>` in Doppler first, then connect to the resolved DB; if isolated, branch is usually `pr-<number>` in project `ancient-sun-39943590` |
+
+<Tip>
+  For logs, start with Datadog. Use Railway logs when you need the latest raw service-local output, build logs, or deploy-specific startup failures.
+</Tip>

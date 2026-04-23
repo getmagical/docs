@@ -1,0 +1,217 @@
+---
+title: Release runbook
+description: Staging, production promotion, hotfix, and rollback workflows for the Magical monorepo.
+---
+
+## Branch model
+
+- **Default development branch:** `develop`
+- **Production branch:** `prod`
+
+## Release workflows
+
+### `.github/workflows/release-staging.yml`
+
+- Runs after successful `CI Pipeline` on `develop` (or manually via `workflow_dispatch`).
+- Posts one updatable staging Slack lifecycle message in `#releases-staging`.
+- Polls Railway staging rollout per service and updates the same message in place.
+- Renders a `Release to production` Slack button when staging is active and successful.
+
+### `.github/workflows/promote-to-prod.yml`
+
+- Requires explicit `target_sha`.
+- Blocks deployment unless CI for that exact SHA succeeded, unless `hotfix_override=true` with `hotfix_reference`.
+- Blocks deployment when the production freeze ruleset is active.
+- Blocks deployment when the production freeze ruleset is missing (fail-closed).
+- Uses fast-forward push by default. If `prod` tip only diverges via cherry-picked commits already represented in `develop`, it realigns `prod` to the selected `develop` SHA with `--force-with-lease` after ancestry validation.
+- Publishes release metadata (`deploy-manifest.json`).
+- Uses one updatable Slack lifecycle message in `#releases-production` (not separate start/success posts).
+- Polls Railway rollout state per production service and updates Slack status rows on change.
+- Includes the rollback Slack action only when the release is non-active and rollback-capable.
+
+### `.github/workflows/rollback-prod.yml`
+
+- Supports rollback to an explicit target SHA.
+- Performs rollback by creating a revert commit on the production branch (non-destructive).
+- Publishes rollback metadata (`rollback-manifest.json`) and Slack notifications.
+
+## Staging → production messaging flow
+
+`release-staging.yml`:
+
+1. Resolve staging target (`prev_sha`, `new_sha`, `deploy_tag`) from successful `develop` CI (or manual input).
+2. Collect PRs in the commit range (`prev_sha..new_sha`).
+3. Post one Slack Block Kit message (`chat.postMessage`) to `#releases-staging` with staging tag, linked before/after SHAs, PR list, and per-service rollout rows.
+4. Poll Railway deployment state for each service in the staging environment.
+5. Update the same Slack message (`chat.update`) as service status changes.
+6. Finalize with terminal status.
+7. If staging is active and successful, render the `Release to production` button.
+8. The Slack action calls `POST /webhooks/slack/deploy-actions` in `service-main`, which dispatches `promote-to-prod.yml` for that exact staging SHA.
+9. If production freeze is active, the Slack action responds with an error instead of dispatching.
+
+`promote-to-prod.yml`:
+
+1. Resolve deployment target (`prev_sha`, `new_sha`, `deploy_tag`) and CI gate result.
+2. Collect PRs in the commit range.
+3. Post one Slack Block Kit message to `#releases-production` with release tag, linked SHAs, PR list, and initial per-service rollout rows.
+4. Promote the `prod` branch and tag as needed.
+5. Poll Railway deployment state per production service and update the Slack message.
+6. Finalize with terminal status:
+   - success: all services terminal-success
+   - failed: failed service(s) or timeout
+7. If the release is non-active and rollback metadata is available, render the rollback button (which calls `POST /webhooks/slack/deploy-actions`, triggering Railway `deploymentRollback`).
+
+## Standard deployment
+
+<Steps>
+  <Step title="Merge to develop">
+    Open a PR, get it approved, merge to `develop`.
+  </Step>
+  <Step title="Confirm freeze is off">
+    Ensure production freeze is `OFF`. Use `/freeze` in Slack if needed — see [ChatOps](/internal/chatops).
+  </Step>
+  <Step title="Wait for green CI and staging rollout">
+    Wait for green `CI Pipeline` and a successful staging rollout in `#releases-staging`.
+  </Step>
+  <Step title="Click Release to production">
+    In the staging message, click `Release to production` to dispatch `promote-to-prod.yml` on that exact commit.
+  </Step>
+  <Step title="Monitor production lifecycle">
+    Watch `#releases-production` until all services report terminal success.
+  </Step>
+</Steps>
+
+This guarantees the production release is pinned to a staging-validated immutable SHA.
+
+## Emergency hotfix
+
+Run `Promote Release to Production` with:
+
+- `target_sha=<sha>`
+- `hotfix_override=true`
+- `hotfix_reference=<incident/ticket>`
+- `reason=<summary>`
+
+<Warning>
+  Hotfix deploy bypasses the CI gate only when explicitly requested and documented.
+</Warning>
+
+## Rollback
+
+Primary rollback options:
+
+1. **Slack rollback action (recommended when available).**
+   - Available only on non-active release Slack messages with rollback metadata.
+   - Uses Railway `deploymentRollback` per service deployment ID (no git revert).
+2. **`Rollback Production to Release` workflow.**
+   - `target_sha=<previous-good-production-sha>`
+   - `reason=<why rollback is needed>`
+   - Branch-history rollback via revert commit + rollback marker tag.
+
+Use the workflow rollback if the Slack action is unavailable or release metadata is incomplete.
+
+## Test from a PR (dry run)
+
+You can run production workflows from your PR branch by setting `dry_run=true`.
+
+**Promote workflow:**
+
+Run `Promote Release to Production` with:
+
+- `target_sha=<sha>`
+- `reason=<test reason>`
+- `dry_run=true`
+- `dry_run_track=staging` *(optional; useful before production branch/trigger cutover)*
+
+**Rollback workflow:**
+
+Run `Rollback Production to Release` with:
+
+- `target_sha=<sha>`
+- `reason=<test reason>`
+- `dry_run=true`
+
+### Dry-run behavior
+
+In dry-run mode, workflows:
+
+- Validate inputs and deployment logic.
+- Generate manifest artifacts and notes.
+- **Do not** push branches, create tags/releases, or mutate Railway deployments.
+- Still post and finalize the deploy Slack lifecycle message with mode `dry-run`.
+- Run Railway polling in mock mode against the current branch tip (`develop` for staging, `prod` for production) so service status rows are exercised without deployment mutation.
+- Finish mock polling after `RAILWAY_DRY_RUN_POLL_TIMEOUT_SECONDS` (default `180`) with a non-failing dry-run note.
+
+## Operator behavior
+
+During `release-staging.yml`:
+
+1. Watch the single staging Slack message for service-level progress.
+2. If rollout succeeds and the message shows `Release to production`, use that button for promotion.
+3. If rollout fails, investigate Railway/service errors before promoting.
+
+During `promote-to-prod.yml`:
+
+1. Watch the Slack deploy message for service-level progress.
+2. Confirm all services reach terminal success before treating deploy as complete.
+3. If deploy fails and the rollback action is present, trigger rollback from Slack.
+4. If the rollback action is missing, run `rollback-prod.yml` manually.
+
+## Required secrets and variables
+
+### GitHub workflow secrets/variables
+
+- `RAILWAY_API_TOKEN`
+- `RAILWAY_PROJECT_ID`
+- `SLACK_RELEASES_BOT_TOKEN` *(falls back to `SLACK_BOT_TOKEN_ENG_BUILDS_AGENTIC`, then `SLACK_BOT_TOKEN`)*
+- `RAILWAY_STAGING_ENVIRONMENT` *(repo variable, optional; default `staging`)*
+- `RAILWAY_PRODUCTION_ENVIRONMENT` *(repo variable, optional; default `production`)*
+- `SLACK_RELEASES_STAGING_CHANNEL_ID` *(repo variable, optional; default `C0AE4UFQZ6H`)*
+- `SLACK_RELEASES_PRODUCTION_CHANNEL_ID` *(repo variable, optional; default `C0AE4UJ8077`)*
+- `RAILWAY_DEPLOY_POLL_INTERVAL_SECONDS` *(repo variable, optional; default `20`)*
+- `RAILWAY_DEPLOY_POLL_TIMEOUT_SECONDS` *(repo variable, optional; default `1800`)*
+- `RAILWAY_DRY_RUN_POLL_TIMEOUT_SECONDS` *(repo variable, optional; default `180`)*
+- `GITHUB_RELEASE_FREEZE_PRODUCTION_RULESET_NAME` *(repo variable, optional; default `Release Freeze: Production (prod)`)*
+
+### service-main runtime (Slack rollout actions)
+
+- `SLACK_RELEASES_BOT_TOKEN`
+- `SLACK_RELEASES_SIGNING_SECRET`
+- `RAILWAY_API_TOKEN`
+- `RAILWAY_PROJECT_ID`
+- `SLACK_RELEASES_STAGING_CHANNEL_ID` *(optional; default `C0AE4UFQZ6H`)*
+- `SLACK_RELEASES_PRODUCTION_CHANNEL_ID` *(optional; default `C0AE4UJ8077`)*
+- `GITHUB_RULESETS_TOKEN` *(recommended; falls back to `GITHUB_WORKFLOW_DISPATCH_TOKEN`)*
+- `GITHUB_WORKFLOW_DISPATCH_TOKEN` *(token with permission to dispatch `promote-to-prod.yml`)*
+- `GITHUB_WORKFLOW_DISPATCH_REPOSITORY` *(optional; default `getmagical/magical`)*
+- `GITHUB_RELEASE_FREEZE_CODE_RULESET_NAME` *(optional; default `Release Freeze: Code (develop)`)*
+- `GITHUB_RELEASE_FREEZE_PRODUCTION_RULESET_NAME` *(optional; default `Release Freeze: Production (prod)`)*
+- `GITHUB_PROD_RELEASE_WORKFLOW_ID` *(optional; default `promote-to-prod.yml`)*
+- `GITHUB_PROD_RELEASE_WORKFLOW_REF` *(optional; default `develop`)*
+
+## Audit and traceability
+
+Each deployment/rollback produces:
+
+- A GitHub Release tag and notes.
+- A manifest artifact (`deployment-manifest-*` or `rollback-manifest-*`).
+- One staging Slack lifecycle message (`#releases-staging`) with in-place updates.
+- One production Slack lifecycle message (`#releases-production`) with in-place updates.
+
+## One-time cutover (manual, as needed)
+
+1. Create the `prod` branch from the current production tip (if not already created):
+   ```bash
+   git fetch origin
+   git push origin origin/prod-services:refs/heads/prod
+   ```
+2. Update GitHub rulesets to protect `refs/heads/prod`.
+3. Configure required reviewers for GitHub Environment `Agentic / production`.
+4. Update Railway production deployment triggers from `prod-services` to `prod`.
+5. Remove/decommission `prod-services` branch in your infra/repo policy after cutover.
+
+### Safety checks before first live deploy on `prod`
+
+- `Promote Release to Production` dry-run succeeds from PR/develop.
+- `Rollback Production to Release` dry-run succeeds from PR/develop.
+- Team confirms runbook ownership and on-call path.

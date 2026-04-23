@@ -1,0 +1,55 @@
+---
+title: Internal engineering overview
+description: Orientation to the Magical monorepo, services, and shared packages.
+---
+
+<Note>
+  This section documents internal engineering practices for the `getmagical/magical` monorepo. It is aimed at Magical employees and contractors. For product documentation, see the **Guides** tab.
+</Note>
+
+## What's in the monorepo
+
+The `getmagical/magical` repository is an agentic AI automation platform composed of web apps, backend services, and shared packages.
+
+| Package | Purpose |
+| --- | --- |
+| `apps/portal` | Next.js 15 frontend (`@magical/app-portal`) |
+| `services/main` | Hono API server (`@magical/service-main`) |
+| `services/worker` | Temporal worker (`@magical/service-worker`) |
+| `services/mcp` | Apollo MCP server (`@magical/mcp`) |
+| `packages/db` | Drizzle ORM + PostgreSQL (`@magical/db`) |
+| `packages/graphql` | GraphQL schema and utilities (`@magical/graphql`) |
+| `packages/common` | Shared utilities (`@magical/common`) |
+| `packages/workflows` | Temporal workflows (`@magical/workflows`) |
+| `packages/remote-session` | Browser automation (`@magical/remote-session`) |
+| `packages/ai` | AI SDK integrations (`@magical/ai`) |
+| `packages/design-system` | UI components (`@magical/design-system`) |
+
+## Package-specific guidance
+
+Each area has an `AGENTS.md` file with conventions and patterns. Consult the file in the directory you're working in:
+
+- `apps/portal/AGENTS.md` — Next.js frontend patterns and Zustand state
+- `packages/ai/AGENTS.md` — AI SDK integrations
+- `packages/db/AGENTS.md` — Database layer patterns
+- `packages/design-system/AGENTS.md` — UI components
+- `packages/evals/AGENTS.md` — Evaluation framework
+- `packages/graphql/AGENTS.md` — GraphQL schema and utilities
+- `packages/remote-session/AGENTS.md` — Browser automation
+- `packages/remote-session/src/tools/AGENTS.md` — Tool-level execution contracts
+- `packages/workflows/AGENTS.md` — Temporal workflow versioning (patching rules)
+- `services/main/AGENTS.md` — API server patterns
+- `services/mcp/AGENTS.md` — Apollo MCP server patterns
+- `services/worker/AGENTS.md` — Temporal worker
+
+## Where to go next
+
+- [Local setup](/internal/local-setup) — Bootstrap, direnv, Doppler, and database
+- [Development workflow](/internal/development-workflow) — Turbo commands and watch mode
+- [Parallel worktrees](/internal/parallel-worktrees) — Run multiple features in parallel
+- [Agent configuration](/internal/agent-configuration) — Configure AI providers for agents
+- [Operational tools](/internal/operational-tools) — Railway, Datadog, Sentry, Neon, and more
+- [Environments](/internal/environments) — Staging, production, and PR previews
+- [Release runbook](/internal/release-runbook) — Deploy and rollback
+- [ChatOps and freeze controls](/internal/chatops) — Slack deploy actions and release freeze
+- [Troubleshooting](/internal/troubleshooting) — Doppler and Turborepo issues

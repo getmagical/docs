@@ -62,6 +62,41 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Internal",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "internal/overview"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "internal/local-setup",
+              "internal/development-workflow",
+              "internal/parallel-worktrees",
+              "internal/agent-configuration"
+            ]
+          },
+          {
+            "group": "Operations",
+            "pages": [
+              "internal/operational-tools",
+              "internal/environments",
+              "internal/release-runbook",
+              "internal/chatops"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "internal/troubleshooting"
+            ]
+          }
+        ]
       }
     ]
   },

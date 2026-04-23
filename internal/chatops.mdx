@@ -1,0 +1,117 @@
+---
+title: ChatOps and freeze controls
+description: Slack integration for release lifecycle updates, deploy actions, and code/production freeze.
+---
+
+## Deploy UX
+
+Both release workflows use a single updatable Slack lifecycle message:
+
+- one `chat.postMessage` at deploy start
+- repeated `chat.update` calls as Railway service states change
+- one final `chat.update` for terminal success/failure
+
+Each message includes:
+
+- Release tag
+- Linked `From: <before> -> <after>` commit SHAs
+- PR list in deploy range
+- Per-service status rows (`queued`, `in_progress`, `success`, `failed`)
+- Workflow run link (and CI link when present)
+
+**Channel routing:**
+
+- Staging: `#releases-staging` (`C0AE4UFQZ6H`) via `.github/workflows/release-staging.yml`
+- Production: `#releases-production` (`C0AE4UJ8077`) via `.github/workflows/promote-to-prod.yml`
+
+## `/freeze` command
+
+The `/freeze` slash command opens a modal with two controls:
+
+- Code freeze (`develop` merges)
+- Production freeze (`prod` releases)
+
+Each control supports `Freeze` or `Unfreeze`.
+
+**Modal submit behavior:**
+
+- Upserts two repository rulesets in `getmagical/magical` (creates if missing, then toggles active/disabled):
+  - `Release Freeze: Code (develop)`
+  - `Release Freeze: Production (prod)`
+- Posts a freeze audit message to both release channels (`#releases-staging`, `#releases-production`).
+
+**Ruleset bootstrap:**
+
+- Opening `/freeze` auto-creates any missing freeze rulesets in `disabled` mode before rendering state.
+
+## `release_to_production` button (staging message)
+
+- Rendered only when staging release is terminal-success and active.
+- Action id: `release_to_production`.
+- Payload: repository, workflow, ref, exact staging commit SHA.
+
+**Handler:**
+
+- Endpoint: `POST /webhooks/slack/deploy-actions` (service-main).
+- Verifies Slack signature using `SLACK_RELEASES_SIGNING_SECRET`.
+- Parses `promote_staging_release` payload.
+- Rejects the action when production freeze is active.
+- Dispatches `promote-to-prod.yml` via the GitHub workflow dispatch API.
+- Responds ephemerally in Slack with success/failure details.
+
+## `rollback_production_release` button (production message)
+
+- Rendered only when the release is non-active and rollback metadata is available.
+- Action id: `rollback_production_release`.
+- Payload: target release metadata and Railway deployment IDs.
+
+**Handler:**
+
+- Endpoint: `POST /webhooks/slack/deploy-actions` (service-main).
+- Verifies Slack signature using `SLACK_RELEASES_SIGNING_SECRET`.
+- Accepts only `rollback_production_release`.
+- Executes Railway `deploymentRollback(id: <deploymentId>)` for each service deployment.
+- Responds ephemerally with success or partial-failure details.
+
+<Note>
+  This rollback path uses Railway internal rollback mechanics, not git revert.
+</Note>
+
+## Slack app setup
+
+- Enable Interactivity and point it to:
+  - `https://<service-main-base-url>/webhooks/slack/deploy-actions`
+- Add the slash command `/freeze` with Request URL:
+  - `https://<service-main-base-url>/webhooks/slack/freeze-command`
+- Ensure bot token scopes include:
+  - `chat:write` — post/update release + freeze notifications
+  - `commands` — slash command support
+- Reinstall the Slack app after adding scopes/commands.
+
+## Operator flow
+
+<Steps>
+  <Step title="Merge and watch staging">
+    Merge to `develop` and watch the staging lifecycle message in `#releases-staging`.
+  </Step>
+  <Step title="Freeze if needed">
+    Use `/freeze` when you need to freeze or unfreeze code and/or production.
+  </Step>
+  <Step title="Promote to production">
+    Click `Release to production` in the staging message when rollout is complete.
+  </Step>
+  <Step title="Watch production rollout">
+    Monitor `#releases-production` for per-service rollout.
+  </Step>
+  <Step title="Rollback on failure">
+    On terminal failure, use the rollback button when shown, or run `rollback-prod.yml` manually if the button is unavailable.
+  </Step>
+</Steps>
+
+## Dry runs
+
+- The Slack lifecycle message still posts and finalizes.
+- Railway polling runs in mock mode against branch head (`develop` for staging, `prod` for production) so service status updates are visible.
+- Mock polling ends after `RAILWAY_DRY_RUN_POLL_TIMEOUT_SECONDS` (default `180`) and reports a dry-run note instead of failing.
+- No branch, tag, release, or Railway mutations occur.
+- For pre-cutover validation, `promote-to-prod.yml` supports `dry_run_track=staging` to post and poll against the staging channel/environment.

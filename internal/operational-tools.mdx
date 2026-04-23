@@ -1,0 +1,64 @@
+---
+title: Operational tools
+description: Pick the right tool for deploys, logs, errors, database, workflows, and team context.
+---
+
+Use the tool that owns the source of truth for the question. Don't force every debugging workflow through one surface.
+
+## Tool selection
+
+| Tool | Use it for | Best first stop for |
+| --- | --- | --- |
+| `railway` | Deployments, service status, build logs, raw runtime output, env/service discovery | "Did this deploy?", "Did the latest build or container startup fail?", "What did the service print most recently?" |
+| `pup` (Datadog) | Searchable indexed logs, browser errors, traces, metrics, cross-service correlation | "What happened in logs?", "Can I search errors by request, trace, URL, or tag?", "What is happening across services?" |
+| `sentry` | Grouped application issues, issue history, event-level error investigation | "What errors are users hitting?", "Is this issue already grouped and recurring?" |
+| `neon` / `neonctl` / `psql` | DB branches, connection strings, SQL verification | "What is in the DB?", "Did this migration land?", "Does this row/state exist?" |
+| `mgcl` | Magical automation configs, drafts, runs, agent definitions | "Is the automation configured correctly?", "What happened in this run?", "What draft or published version is live?" |
+| `agent-slack` | Slack threads, channel history, attachments, team discussion | Gathering company/team context around a bug, feature, incident, or decision |
+| `linear` | Issues, features, bugs, priorities, ownership, acceptance criteria | When the source of truth is the ticket, feature request, or implementation plan |
+| `notion` | Docs, specs, runbooks, internal references | Written product/process context and background docs |
+| `temporal` | Workflow executions, schedules, task queues, worker state, Temporal Cloud debugging | "Is this workflow stuck?", "What does the execution history show?", "What schedules or workers are live?" |
+| `vapi` | Vapi call logs, webhook listen/forward, phone numbers, assistants, tools | "What happened on this call?", "Can I tail call logs?", "Can I forward webhooks locally with `listen`?" |
+| `agent-browser` | Open sites, click through flows, capture screenshots, browser automation | Interacting with the app in a real browser to debug UI or automate steps |
+
+<Tip>
+  Prefer CLIs over MCP servers when the CLI is already available in the current environment: `agent-browser`, `mgcl`, `neon`, `railway`, `sentry`, `linear`, `agent-slack`, `notion`, `temporal`, `pup`, `vapi`.
+</Tip>
+
+## Practical starting points
+
+```bash
+# Logs — prefer Datadog first, Railway for raw startup output
+pup logs search --query "service:<service> env:<env> status:error" --from 1h
+railway deployment list --environment <env> --service <service> --json
+railway logs --environment <env> --service <service> --lines 200 --json
+
+# Sentry — grouped issues
+sentry issue list getmagical/<project> --query "environment:<env> is:unresolved"
+
+# Neon — connect to a branch
+neon connection-string <branch> \
+  --project-id ancient-sun-39943590 \
+  --database-name magical_agt \
+  --role-name magical_agt_owner \
+  --psql -- -c "SELECT now();"
+
+# Vapi
+vapi logs calls <call-id>
+vapi listen --forward-to localhost:3000/webhook
+vapi phone list
+vapi tool list
+```
+
+<Note>
+  Slack, Linear, and Notion are not deployment-environment surfaces. Search them by feature name, bug title, PR number, ticket id, customer name, or exact error string to gather product and team context around the issue.
+</Note>
+
+## Skills and sub-agents
+
+Before starting a task, consider whether a relevant skill or sub-agent is available:
+
+1. **Load skills.** Use the Skill tool to load relevant skills before proceeding.
+2. **Delegate to agents.** Use a sub-agent when a task matches its specialty.
+
+Skills contain project-specific patterns that help prevent mistakes. Loading a relevant skill up front can save time and avoid repeated errors.
