@@ -69,8 +69,7 @@
           {
             "group": "Platform overview",
             "pages": [
-              "internal/overview",
-              "internal/authentication"
+              "internal/overview"
             ]
           },
           {
