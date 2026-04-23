@@ -30,6 +30,16 @@ Typical setup:
 5. define inputs and outputs;
 6. turn on a checkpoint only if the step needs later review.
 
+<Tip>
+  Variables do not need to be passed explicitly from a child agent to its parent. The parent already has context on the child's inputs and outputs.
+
+  To reference a child's output from the parent, use the pattern:
+
+  ```
+  clickFill with <thisOutput> from <agentName>
+  ```
+</Tip>
+
 Prefer `Branch` for strict path selection and `API` for a direct service request.
 
 ## Browser
