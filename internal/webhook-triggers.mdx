@@ -1,0 +1,132 @@
+---
+title: Webhook triggers
+description: Trigger a Magical automation from any external system using a signed HTTP webhook.
+---
+
+Every published automation can be triggered by an HTTP request to a dedicated webhook URL. Use webhooks to connect Intercom, Slack, HelpScout, your own backend, or any other system to a Magical automation.
+
+## Webhook URL
+
+```
+POST https://api.getmagical.com/webhooks/automation/:publishedAutomationId/:agentId
+```
+
+Example:
+
+```
+POST https://api-agt-staging.getmagical.net/webhooks/automation/726af24f-42cf-492a-a16d-a911dfaf6830/<agentId>
+```
+
+Set this URL in the external system's webhook settings (for example, Intercom → webhook settings). Whatever payload that system sends becomes input to the automation run.
+
+### Query parameters
+
+| Param | Description |
+| --- | --- |
+| `parentAutomationRunId` | Optional. Attach this run as a child of another run. |
+
+### Response
+
+On success:
+
+```json
+{ "success": true, "workflowId": "<workflow-id>" }
+```
+
+The automation run is started with:
+
+- `invocationType = WEBHOOK`
+- `input` populated from the parsed JSON body, plus `webhookData` containing the raw JSON as a string.
+
+## Idempotency
+
+Webhook requests are subject to the standard idempotency middleware. Supply an `Idempotency-Key` header to make retries safe. See [Idempotency](/automations/idempotency) for the contract.
+
+## Authentication
+
+Webhook requests are authenticated against **per-automation webhook secrets**. Two modes are supported:
+
+### HMAC signatures (preferred)
+
+Sign the raw request body and send the signature in a header. Magical validates with a timing-safe comparison against all active secrets for the automation.
+
+| Header | Algorithm | Encoding |
+| --- | --- | --- |
+| `x-webhook-signature` | HMAC-SHA256 | hex |
+| `X-HelpScout-Signature` | HMAC-SHA1 | base64 |
+
+Example (SHA-256, hex) in Node:
+
+```ts
+import { createHmac } from 'node:crypto';
+
+const signature = createHmac('sha256', secret)
+  .update(rawBody)
+  .digest('hex');
+
+fetch(webhookUrl, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-webhook-signature': signature,
+  },
+  body: rawBody,
+});
+```
+
+### Shared-secret Bearer
+
+If you can't sign the body, send the secret directly as a Bearer token:
+
+```http
+Authorization: Bearer <secret>
+```
+
+Magical compares it against the active secrets using a constant-time check.
+
+### Expired secrets
+
+If **all** configured secrets for an automation are expired, Magical currently treats the webhook as unprotected and accepts the request rather than failing. Rotate secrets before the previous ones expire to avoid an unprotected window.
+
+<Warning>
+  Upcoming change: once all automations have been migrated, webhooks without at least one active secret will start failing. Always keep a valid secret configured.
+</Warning>
+
+## Manage webhook secrets
+
+Use the REST API to create, list, and delete secrets per automation. Full reference: [REST API → Webhook secrets](/internal/rest-api#webhook-secrets).
+
+```http
+GET    /automations/published/:publishedAutomationId/webhook-secrets
+POST   /automations/published/:publishedAutomationId/webhook-secrets
+DELETE /automations/published/:publishedAutomationId/webhook-secrets/:secretId
+
+POST   /webhooks/generate-secret   # helper that returns a random secret value
+```
+
+`POST` body:
+
+```json
+{
+  "secret": "<string>",
+  "name": "Intercom prod",
+  "expiresAt": "2026-01-01T00:00:00Z"
+}
+```
+
+## Test your integration
+
+<Steps>
+  <Step title="Publish the automation">
+    Only **published** automations expose a webhook URL. Publish a draft first. See [Publish and versions](/automations/publish-and-versions).
+  </Step>
+  <Step title="Create a webhook secret">
+    Call `POST /automations/published/:publishedAutomationId/webhook-secrets` with a strong random secret and an optional name/expiry.
+  </Step>
+  <Step title="Send a signed request">
+    Point your external system at the webhook URL, configure it with the same secret, and trigger a test event.
+  </Step>
+  <Step title="Inspect the run">
+    The resulting automation run shows up in the Run Log with `invocationType = WEBHOOK`. Use `debugUrl` or the API to inspect it. See [Run log and triage](/runs/run-log-and-triage).
+  </Step>
+</Steps>

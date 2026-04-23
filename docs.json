@@ -67,33 +67,24 @@
         "tab": "Internal",
         "groups": [
           {
-            "group": "Overview",
+            "group": "Platform overview",
             "pages": [
-              "internal/overview"
+              "internal/overview",
+              "internal/authentication"
             ]
           },
           {
-            "group": "Development",
+            "group": "APIs",
             "pages": [
-              "internal/local-setup",
-              "internal/development-workflow",
-              "internal/parallel-worktrees",
-              "internal/agent-configuration"
+              "internal/rest-api",
+              "internal/graphql-api",
+              "internal/mcp"
             ]
           },
           {
-            "group": "Operations",
+            "group": "Integrations",
             "pages": [
-              "internal/operational-tools",
-              "internal/environments",
-              "internal/release-runbook",
-              "internal/chatops"
-            ]
-          },
-          {
-            "group": "Troubleshooting",
-            "pages": [
-              "internal/troubleshooting"
+              "internal/webhook-triggers"
             ]
           }
         ]

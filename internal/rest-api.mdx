@@ -1,0 +1,247 @@
+---
+title: REST API
+description: HTTP endpoints for managing automations, triggering runs, and inspecting execution.
+---
+
+All REST endpoints live on `service-main`. See [Overview](/internal/overview) for base URLs and [Authentication](/internal/authentication) for access tokens.
+
+Unless noted, endpoints require:
+
+```http
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+```
+
+## Automations
+
+### Create a draft automation
+
+```http
+POST /automations
+```
+
+Returns the new `draftAutomationId`.
+
+### List draft automations
+
+```http
+GET /automations/draft
+```
+
+### Get a draft automation
+
+```http
+GET /draft-automation/draft-automation/:draftAutomationId
+```
+
+### Duplicate a draft
+
+```http
+POST /automations/draft/:draftAutomationId/duplicate
+```
+
+### List published automations
+
+```http
+GET /automations/published
+```
+
+### Get a published automation
+
+```http
+GET /automations/published/:publishedAutomationId
+```
+
+### Unpublish
+
+```http
+POST /automations/published/:publishedAutomationId/unpublish
+```
+
+### Block / unblock queued runs
+
+Temporarily stop a published automation from accepting new queued runs.
+
+```http
+POST /automations/published/:publishedAutomationId/block-queued-runs
+POST /automations/published/:publishedAutomationId/unblock-queued-runs
+```
+
+### Suggested inputs
+
+Ask the server to suggest likely inputs for a given agent in an automation.
+
+```http
+POST /automations/suggestions/inputs
+```
+
+```json
+{
+  "agent": { "id": "<uuid>", "type": "<agentType>", "name": "...", "inputSchema": { ... } },
+  "automationId": "<uuid>"
+}
+```
+
+## Run automations
+
+### Run a published automation
+
+```http
+POST /automations/published/:publishedAutomationId/run
+```
+
+```json
+{
+  "agentId": "<uuid>",
+  "input": { "key": "value" },
+  "additionalPrompt": "optional instruction",
+  "config": { },
+  "waitForCompletion": false
+}
+```
+
+Supports the `Idempotency-Key` header via `idempotencyMiddleware`.
+
+Response includes `automationRunId` and `workflowId`.
+
+### Bulk run a published automation
+
+```http
+POST /automations/published/:publishedAutomationId/bulk-run
+```
+
+```json
+{
+  "agentId": "<uuid>",
+  "config": { },
+  "inputs": [
+    { "input": { "key": "value" }, "additionalPrompt": "..." },
+    { "input": { "key": "other" } }
+  ]
+}
+```
+
+### Run a draft automation
+
+```http
+POST /automations/draft/:draftAutomationId/run
+```
+
+```json
+{
+  "agentId": "<uuid>",
+  "input": { },
+  "additionalPrompt": "optional"
+}
+```
+
+## Automation runs
+
+### List runs
+
+```http
+GET /automation-runs?page=1&pageSize=50&from=...&to=...&environment=...
+```
+
+Query params include `search`, `reviewed`, `invocationTypes`, `type`, `environment`, and error-categorization filters.
+
+### Get a run
+
+```http
+GET /automation-runs/automation-run/:automationRunId
+```
+
+### Run sessions and iterations
+
+```http
+GET /automation-runs/automation-run/:automationRunId/iterations
+GET /automation-runs/automation-run/:automationRunId/iterations/export
+GET /automation-runs/automation-run/:automationRunId/sessions
+GET /automation-runs/automation-run/:automationRunId/original-parent
+GET /automation-runs/automation-run/:automationRunId/queue-status
+GET /automation-runs/automation-run/:automationRunId/pool-resources
+```
+
+### Control a run
+
+```http
+POST /automation-runs/automation-run/:automationRunId/pause
+POST /automation-runs/automation-run/:automationRunId/stop
+POST /automation-run/:automationRunId/rerun   # idempotencyKey required
+```
+
+```json
+{
+  "additionalPrompt": "optional",
+  "idempotencyKey": "<unique>"
+}
+```
+
+<Note>
+  The legacy `POST /automation-run/:automationRunId/pause` and `/rerun` endpoints still work but are deprecated. Prefer the `automation-runs/automation-run/...` paths.
+</Note>
+
+## Webhook secrets
+
+Manage the secrets used to authenticate inbound [webhook triggers](/internal/webhook-triggers) per published automation.
+
+```http
+GET    /automations/published/:publishedAutomationId/webhook-secrets
+POST   /automations/published/:publishedAutomationId/webhook-secrets
+DELETE /automations/published/:publishedAutomationId/webhook-secrets/:secretId
+POST   /webhooks/generate-secret
+```
+
+`POST` body:
+
+```json
+{
+  "secret": "<string>",
+  "name": "optional label",
+  "expiresAt": "2026-01-01T00:00:00Z"
+}
+```
+
+## Agents
+
+```http
+GET /agents/published/search?query=...&agentIds=...&includeChildren=true|false
+GET /agents/agent/:agentId
+GET /agents/agent/:agentId/agent-versions
+POST /agents/agent/:agentId/agent-versions/restore
+```
+
+## Library
+
+```http
+GET  /library/agents
+POST /library/agents
+```
+
+The library is the organization-wide catalog of reusable agents.
+
+## Feedback on iterations
+
+```http
+GET /automations/automation/:automationId/feedback?page=1&pageSize=10&resolved=...&agentIds=...&reception=...
+```
+
+## Health
+
+```http
+GET /health-check
+```
+
+## Environments and routing
+
+All platform endpoints above are exposed from `service-main`. Routes are grouped internally into clients but share the same host:
+
+- `automationsClient` — `/automations`, `/draft-automation`, `/authentications`, `/desktop-app`, `/resource-pools`, `/deals`
+- `automationRunsClient` — `/automation-run`, `/automation-runs`, `/automation-run-iterations`
+- `testingAndVerificationClient` — `/verification`, `/automation-test`, `/checkpoints`
+- `agentsClient` — `/agents`, `/agent-run`
+- `libraryClient` — `/library`
+- `platformClient` — `/auth`, `/health-check`, `/webhooks`, `/workos`, `/session`, `/jobs`, `/aws`, `/models`, `/voice`
+- `evalsClient` — `/evals`
+
+You don't need to care about this split as a caller — it exists so Hono can infer types efficiently. The base URL is the same for all groups.

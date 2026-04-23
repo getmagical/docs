@@ -1,55 +1,39 @@
 ---
-title: Internal engineering overview
-description: Orientation to the Magical monorepo, services, and shared packages.
+title: Platform reference
+description: Build on Magical programmatically. REST API, GraphQL, MCP, webhooks, and authentication.
 ---
 
 <Note>
-  This section documents internal engineering practices for the `getmagical/magical` monorepo. It is aimed at Magical employees and contractors. For product documentation, see the **Guides** tab.
+  This section is for developers building on top of the Magical platform. If you want to build and run automations inside the app, start with the **Guides** tab.
 </Note>
 
-## What's in the monorepo
+Magical exposes several programmable surfaces so you can create, run, and monitor automations from your own code.
 
-The `getmagical/magical` repository is an agentic AI automation platform composed of web apps, backend services, and shared packages.
+## Surfaces
 
-| Package | Purpose |
+| Surface | Use when |
 | --- | --- |
-| `apps/portal` | Next.js 15 frontend (`@magical/app-portal`) |
-| `services/main` | Hono API server (`@magical/service-main`) |
-| `services/worker` | Temporal worker (`@magical/service-worker`) |
-| `services/mcp` | Apollo MCP server (`@magical/mcp`) |
-| `packages/db` | Drizzle ORM + PostgreSQL (`@magical/db`) |
-| `packages/graphql` | GraphQL schema and utilities (`@magical/graphql`) |
-| `packages/common` | Shared utilities (`@magical/common`) |
-| `packages/workflows` | Temporal workflows (`@magical/workflows`) |
-| `packages/remote-session` | Browser automation (`@magical/remote-session`) |
-| `packages/ai` | AI SDK integrations (`@magical/ai`) |
-| `packages/design-system` | UI components (`@magical/design-system`) |
+| [REST API](/internal/rest-api) | You want to create automations, run published or draft automations, fetch run details, manage webhook secrets, or control runs (pause/resume/stop) from a backend service. |
+| [GraphQL API](/internal/graphql-api) | You prefer a single typed query surface or need richer selection over automations, agents, and runs. |
+| [MCP server](/internal/mcp) | You're wiring Magical into an AI agent or IDE over Model Context Protocol (Claude Desktop, Cursor, Claude Code, etc.). |
+| [Webhook triggers](/internal/webhook-triggers) | You want an external system (Intercom, Slack, a third-party app, your own backend) to fire a Magical automation. |
+| [Authentication](/internal/authentication) | You need access tokens for the REST or GraphQL APIs. |
 
-## Package-specific guidance
+## Common concepts
 
-Each area has an `AGENTS.md` file with conventions and patterns. Consult the file in the directory you're working in:
+- **Automation** — a versioned workflow. Each automation has a **draft** and, once you ship it, a **published** version. Drafts are identified by `draftAutomationId`, published ones by `publishedAutomationId`.
+- **Agent** — an AI worker attached to an automation. You pass an `agentId` when you trigger a run.
+- **Run** — an execution of an automation. Runs are identified by `automationRunId` and map to a Temporal `workflowId` under the hood.
+- **Idempotency** — most run-triggering endpoints accept an idempotency key so you can safely retry without creating duplicate runs. See [Idempotency](/automations/idempotency) in the product docs for behavior rules.
 
-- `apps/portal/AGENTS.md` — Next.js frontend patterns and Zustand state
-- `packages/ai/AGENTS.md` — AI SDK integrations
-- `packages/db/AGENTS.md` — Database layer patterns
-- `packages/design-system/AGENTS.md` — UI components
-- `packages/evals/AGENTS.md` — Evaluation framework
-- `packages/graphql/AGENTS.md` — GraphQL schema and utilities
-- `packages/remote-session/AGENTS.md` — Browser automation
-- `packages/remote-session/src/tools/AGENTS.md` — Tool-level execution contracts
-- `packages/workflows/AGENTS.md` — Temporal workflow versioning (patching rules)
-- `services/main/AGENTS.md` — API server patterns
-- `services/mcp/AGENTS.md` — Apollo MCP server patterns
-- `services/worker/AGENTS.md` — Temporal worker
+## Base URLs
 
-## Where to go next
+| Environment | Host |
+| --- | --- |
+| Production | `https://api.getmagical.com` |
+| Staging | `https://api-agt-staging.getmagical.net` |
+| Local dev | `http://main.localhost:1355` |
 
-- [Local setup](/internal/local-setup) — Bootstrap, direnv, Doppler, and database
-- [Development workflow](/internal/development-workflow) — Turbo commands and watch mode
-- [Parallel worktrees](/internal/parallel-worktrees) — Run multiple features in parallel
-- [Agent configuration](/internal/agent-configuration) — Configure AI providers for agents
-- [Operational tools](/internal/operational-tools) — Railway, Datadog, Sentry, Neon, and more
-- [Environments](/internal/environments) — Staging, production, and PR previews
-- [Release runbook](/internal/release-runbook) — Deploy and rollback
-- [ChatOps and freeze controls](/internal/chatops) — Slack deploy actions and release freeze
-- [Troubleshooting](/internal/troubleshooting) — Doppler and Turborepo issues
+<Tip>
+  The public Platform UI lives at `https://platform.getmagical.io`. API calls go to the `api.*` host for the same environment.
+</Tip>
