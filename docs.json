@@ -62,6 +62,31 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Internal",
+        "groups": [
+          {
+            "group": "Platform overview",
+            "pages": [
+              "internal/overview"
+            ]
+          },
+          {
+            "group": "APIs",
+            "pages": [
+              "internal/rest-api",
+              "internal/graphql-api",
+              "internal/mcp"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "internal/webhook-triggers"
+            ]
+          }
+        ]
       }
     ]
   },

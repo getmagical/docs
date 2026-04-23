@@ -1,0 +1,209 @@
+---
+title: GraphQL API
+description: Typed access to automations, agents, and runs.
+---
+
+Magical exposes a GraphQL endpoint on `service-main`:
+
+```http
+POST /graphql
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+```
+
+The GraphQL schema is the canonical source of truth for the platform's data model. The MCP server uses the same schema, so anything you can do in MCP you can also do in GraphQL directly.
+
+## Core types
+
+- **`Automation`** — a versioned workflow with `id`, `name`, `environment`, `draftVersionId`, `publishedVersionId`, `lastSavedAt`, timestamps, and an `organizationId`.
+- **`Agent`** — an AI worker with `name`, `description`, `instructions`, `instructionsMode` (`legacy` rich text or `commands`), `inputSchema`, `outputSchema`, `childAgentIds`, and a `config` sub-object (model, tools, environment options).
+- **`AgentConfig`** — per-agent model pool, tools, session/message limits, and browser or other environment options.
+- **`AutomationRun`** — a single execution with `status`, `statusDetail`, `summary`, `invocationType`, `input`, timestamps, and a `debugUrl`.
+- **`AgentRun`** — a single agent execution within a run, with `agentVersionId`, `isChildAgent`, and parent linkage.
+
+## Useful queries
+
+All of these are shipped as MCP operations in `services/mcp/operations/`, and they work identically through `POST /graphql`.
+
+### List automations
+
+```graphql
+query ListAutomations(
+  $limit: Float
+  $order: AutomationsOrder
+  $where: AutomationsWhereInput
+) {
+  automations(limit: $limit, order: $order, where: $where) {
+    id
+    name
+    organizationId
+    environment
+    lastSavedAt
+    publishedVersionId
+    draftVersionId
+    createdAt
+    updatedAt
+  }
+}
+```
+
+### Fetch agents with full config
+
+```graphql
+query GetAgents($ids: [ID!]!) {
+  agents(ids: $ids) {
+    id
+    name
+    description
+    instructions
+    inputSchema
+    outputSchema
+    config {
+      type
+      language
+      model
+      tools
+      maxSessionMessages
+      environmentOptions { __typename }
+    }
+  }
+}
+```
+
+### Fetch automation → agent relationships
+
+```graphql
+query GetAutomationAgents($ids: [ID!]!) {
+  automationAgents(ids: $ids) {
+    automationId
+    agentId
+    isTrigger
+    agent { id name instructions childAgentIds }
+  }
+}
+```
+
+### Inspect a run
+
+```graphql
+query GetAutomationRun($id: ID!) {
+  automationRun(id: $id) {
+    id
+    automationId
+    parentAutomationRunId
+    status
+    statusDetail
+    summary
+    invocationType
+    input
+    additionalPrompt
+    debugUrl
+    createdAt
+    startedAt
+    pausedAt
+    finishedAt
+  }
+}
+
+query GetAgentRun($id: ID!) {
+  agentRun(id: $id) {
+    id
+    agentVersionId
+    agentName
+    status
+    statusDetail
+    isChildAgent
+    input
+    startedAt
+    finishedAt
+    parentAgentRunId
+  }
+}
+```
+
+### Run iterations
+
+```graphql
+query AutomationRunIterations($id: ID!) {
+  automationRunIterations(automationRunId: $id) {
+    # ...
+  }
+}
+```
+
+### Available tools, models, commands
+
+```graphql
+query AvailableTools($env: AvailableCommandsEnv!, $automationId: String) {
+  availableTools(env: $env, automationId: $automationId) {
+    id
+    description
+    inputSchema
+  }
+}
+
+query AvailableModels($agentId: String!) {
+  availableModels(agentId: $agentId) {
+    availableModelPools { name poolId models { id name provider status } }
+    allAvailableModels { id name provider status }
+  }
+}
+
+query AvailableCommands($env: AvailableCommandsEnv!) {
+  availableCommands(env: $env) { id description inputSchema }
+}
+```
+
+## Mutations
+
+```graphql
+mutation CreateAutomation($input: CreateAutomationInput!) {
+  createAutomation(input: $input) {
+    id name organizationId draftVersionId
+  }
+}
+
+mutation RunDraftAutomation(
+  $draftAutomationId: ID!
+  $agentId: ID!
+  $idempotencyKey: String!
+  $input: JSON
+  $additionalPrompt: String
+) {
+  runDraftAutomation(
+    draftAutomationId: $draftAutomationId
+    agentId: $agentId
+    idempotencyKey: $idempotencyKey
+    input: $input
+    additionalPrompt: $additionalPrompt
+  ) {
+    automationRunId workflowId workflowRunId
+  }
+}
+
+mutation RerunAutomation(
+  $automationRunId: ID!
+  $idempotencyKey: String!
+  $additionalPrompt: String
+) {
+  rerunAutomation(
+    automationRunId: $automationRunId
+    idempotencyKey: $idempotencyKey
+    additionalPrompt: $additionalPrompt
+  ) { automationRunId workflowId workflowRunId }
+}
+
+mutation PauseAutomationRun($automationRunId: ID!)  { pauseAutomationRun(automationRunId: $automationRunId) }
+mutation ResumeAutomationRun($automationRunId: ID!, $message: String) {
+  resumeAutomationRun(automationRunId: $automationRunId, message: $message)
+}
+mutation StopAutomationRun($automationRunId: ID!)   { stopAutomationRun(automationRunId: $automationRunId) }
+```
+
+<Note>
+  `runDraftAutomation` takes the draft **automation** ID (`Automation.id`), not the `draftVersionId`.
+</Note>
+
+### Idempotency keys
+
+Every run-triggering mutation (`runDraftAutomation`, `rerunAutomation`) requires an `idempotencyKey`. Reuse the same key to safely retry a failed request without creating duplicate runs. For the full rules, see [Idempotency](/automations/idempotency).

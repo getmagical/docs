@@ -1,0 +1,38 @@
+---
+title: Platform reference
+description: Build on Magical programmatically. REST API, GraphQL, MCP, and webhooks.
+---
+
+<Note>
+  This section is for developers building on top of the Magical platform. If you want to build and run automations inside the app, start with the **Guides** tab.
+</Note>
+
+Magical exposes several programmable surfaces so you can create, run, and monitor automations from your own code.
+
+## Surfaces
+
+| Surface | Use when |
+| --- | --- |
+| [REST API](/internal/rest-api) | You want to create automations, run published or draft automations, fetch run details, manage webhook secrets, or control runs (pause/resume/stop) from a backend service. |
+| [GraphQL API](/internal/graphql-api) | You prefer a single typed query surface or need richer selection over automations, agents, and runs. |
+| [MCP server](/internal/mcp) | You're wiring Magical into an AI agent or IDE over Model Context Protocol (Claude Desktop, Cursor, Claude Code, etc.). |
+| [Webhook triggers](/internal/webhook-triggers) | You want an external system (Intercom, Slack, a third-party app, your own backend) to fire a Magical automation. |
+
+## Common concepts
+
+- **Automation** — a versioned workflow. Each automation has a **draft** and, once you ship it, a **published** version. Drafts are identified by `draftAutomationId`, published ones by `publishedAutomationId`.
+- **Agent** — an AI worker attached to an automation. You pass an `agentId` when you trigger a run.
+- **Run** — an execution of an automation. Runs are identified by `automationRunId` and map to a Temporal `workflowId` under the hood.
+- **Idempotency** — most run-triggering endpoints accept an idempotency key so you can safely retry without creating duplicate runs. See [Idempotency](/automations/idempotency) in the product docs for behavior rules.
+
+## Base URLs
+
+| Environment | Host |
+| --- | --- |
+| Production | `https://api.getmagical.com` |
+| Staging | `https://api-agt-staging.getmagical.net` |
+| Local dev | `http://main.localhost:1355` |
+
+<Tip>
+  The public Platform UI lives at `https://platform.getmagical.io`. API calls go to the `api.*` host for the same environment.
+</Tip>

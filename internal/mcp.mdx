@@ -1,0 +1,95 @@
+---
+title: MCP server
+description: Wire Magical into Claude Desktop, Cursor, Claude Code, and other MCP clients.
+---
+
+Magical runs an Apollo MCP server that exposes curated GraphQL operations as MCP tools. This is the fastest way to let an AI assistant list, run, and inspect your automations.
+
+## Endpoint
+
+| Environment | URL |
+| --- | --- |
+| Production | `https://mcp.getmagical.com` |
+| Staging | Ask in `#platform` |
+| Local dev | `http://mcp.localhost:1355` |
+
+Authentication uses **WorkOS AuthKit OAuth**. Your MCP client will be redirected to sign in, then receive the tokens it needs to call Magical on your behalf.
+
+## Available tools
+
+The MCP server exposes a curated subset of GraphQL as tools. As of the latest schema:
+
+**Automations**
+- `ListAutomations` — list by name, environment, timestamps.
+- `CreateAutomation` — create a new draft automation.
+- `UpdateAutomation` — update an automation's fields.
+
+**Runs**
+- `AutomationRun` — fetch a run with status, summary, debug URL.
+- `AutomationRuns` — list runs with filters.
+- `AutomationRunIterations` — fetch iteration-level detail.
+- `AutomationRunAgentRuns` — fetch per-agent activity within a run.
+- `RunDraftAutomation` — trigger a draft run (requires `idempotencyKey`).
+- `RerunAutomation` — re-run an existing run (requires `idempotencyKey`).
+- `PauseAutomationRun`, `ResumeAutomationRun`, `StopAutomationRun` — run lifecycle control.
+
+**Agents**
+- `Agents` — fetch agents by IDs with full config (model, tools, environment options).
+- `AgentRun` — fetch a single agent run.
+- `AgentVersion`, `AgentVersions`, `AgentVersionDiff` — inspect and diff versions.
+- `AutomationAgents` — fetch the agent relationships attached to an automation.
+
+**Capabilities**
+- `AvailableTools`, `AvailableModels`, `AvailableCommands` — enumerate what agents can use.
+- `GraphqlSchema` — return the underlying schema for advanced clients.
+
+Mutation mode is set to `explicit`: only the operations defined in `services/mcp/operations/` are callable as tools. Arbitrary GraphQL mutations are not.
+
+## Configure a client
+
+<Tabs>
+  <Tab title="Claude Desktop">
+    Add Magical to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+    ```json
+    {
+      "mcpServers": {
+        "magical": {
+          "url": "https://mcp.getmagical.com"
+        }
+      }
+    }
+    ```
+
+    Restart Claude Desktop. You'll be prompted to sign in through WorkOS on first use.
+  </Tab>
+  <Tab title="Cursor">
+    In Cursor settings, add an MCP server:
+
+    - Name: `magical`
+    - URL: `https://mcp.getmagical.com`
+
+    Cursor will open a WorkOS OAuth flow in your browser on first use.
+  </Tab>
+  <Tab title="Claude Code">
+    ```bash
+    claude mcp add magical https://mcp.getmagical.com
+    ```
+  </Tab>
+</Tabs>
+
+## Local development
+
+When developing against a local monorepo, point your client at `http://mcp.localhost:1355` (primary) or `http://<worktree>.mcp.localhost:1355` (linked worktrees). The local MCP talks to local `service-main` over GraphQL and skips the WorkOS flow when `GRAPHQL_ENDPOINT` is set to a local URL.
+
+## Behavior
+
+- **Schema source:** `services/mcp/schema.graphql` (local). The MCP server does not depend on GraphOS uplink credentials at startup.
+- **Operations source:** `services/mcp/operations/*.graphql` (local). Add or curate tools by adding new operations here.
+- **Mutation mode:** `explicit` — only defined operations are exposed.
+- **Custom scalars:** mapped via `services/mcp/custom-scalars.json` so Apollo MCP can generate correct JSON Schema for tools.
+- **Telemetry:** Native OTLP export to the local Datadog Agent by default (`http://localhost:4318`).
+
+## Idempotency
+
+Any tool that starts or re-runs a run (for example, `RunDraftAutomation`, `RerunAutomation`) requires an `idempotencyKey`. MCP clients should generate and reuse the same key across retries within the same logical action. See [Idempotency](/automations/idempotency) for the behavior contract.
