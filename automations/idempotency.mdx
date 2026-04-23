@@ -1,0 +1,24 @@
+---
+title: "Idempotency"
+description: "Prevent duplicate runs by matching on the fields you choose, with optional retries after failures."
+---
+
+Idempotency lets you stop the same work from running twice. You pick the fields that identify a run, and Magical checks incoming runs against prior runs that share the same values.
+
+## `ALLOW_DUPLICATE_FAILED_ONLY`
+
+When idempotency is configured on a set of fields and the mode is set to `ALLOW_DUPLICATE_FAILED_ONLY`, each new run is checked against prior runs with the same idempotency identity.
+
+- If the matching fields already ran and **succeeded**, the new run is blocked and does not run again.
+- If the matching fields already ran and **failed**, the new run is allowed and can run again.
+
+"Match exactly" means all of the fields you chose for idempotency match. It does not require every field in the payload to match, only the ones you selected as the idempotency identity.
+
+## The rule in short
+
+- Same important fields + previous success = block.
+- Same important fields + previous failure = allow retry.
+
+## Where this applies
+
+This behavior applies to the idempotent execution path, especially queued child-agent runs. It is not automatically true across every top-level portal run path today.

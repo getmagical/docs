@@ -27,7 +27,8 @@
               "automations/build-on-the-canvas",
               "automations/node-guides",
               "automations/draft-runs-and-tests",
-              "automations/publish-and-versions"
+              "automations/publish-and-versions",
+              "automations/idempotency"
             ]
           },
           {
