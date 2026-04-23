@@ -19,6 +19,16 @@ When idempotency is configured on a set of fields and the mode is set to `ALLOW_
 - Same important fields + previous success = block.
 - Same important fields + previous failure = allow retry.
 
+## Cross-trigger behavior
+
+Idempotency is not scoped to a single trigger. The system checks for duplicates based on:
+
+- The same destination worker or lane
+- The same target agent
+- The same fields chosen for idempotency
+
+It does not care which parent trigger started the run. For example, if Trigger A sends item X to a worker or agent, and Trigger B later sends the same idempotent item X to that same worker or agent, the second run can be treated as a duplicate and skipped.
+
 ## Where this applies
 
 This behavior applies to the idempotent execution path, especially queued child-agent runs. It is not automatically true across every top-level portal run path today.
