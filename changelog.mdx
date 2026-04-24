@@ -1,7 +1,20 @@
 ---
 title: "Changelog"
-description: "Product changes captured in the source training guides for March 2026."
+description: "Product changes captured in the source training guides."
 ---
+
+## April 2026
+
+### Week of April 20
+
+- Idempotency with `ALLOW_DUPLICATE_FAILED_ONLY`
+  - runs matching a prior success on the chosen idempotency fields are blocked;
+  - runs matching a prior failure are allowed to retry;
+  - duplicate checks apply across triggers, scoped to the same destination worker or lane, target agent, and idempotency fields;
+  - applies to the idempotent execution path, especially queued child-agent runs.
+- Child agent outputs in Orchestrate
+  - parents already have context on a child's inputs and outputs, so variables do not need to be passed explicitly;
+  - reference a child's output from the parent with `clickFill with <thisOutput> from <agentName>`.
 
 ## March 2026
 
